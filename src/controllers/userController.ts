@@ -1,0 +1,40 @@
+import { Request, Response } from 'express';
+import User from '@/models/User';
+import { HTTP_STATUS } from '@/utils/httpCodes';
+import logger from '@/utils/logger';
+import cacheService from '@/config/redisClient';
+
+export class UserController {
+    async getUsers(req: Request, res: Response) {
+        try {
+            const users = await cacheService.getOrSet('users:all', async () => {
+                return await User.findAll();
+            }, 60);
+            res.json(users);
+        } catch (error) {
+            logger.error('Error fetching users:', error);
+            if (error instanceof Error) {
+                res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: error.message });
+            } else {
+                res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Unknown error occurred' });
+            }
+        }
+    }
+
+    async createUser(req: Request, res: Response) {
+        try {
+            const { name, email } = req.body;
+            const user = await User.create({ name, email });
+            await cacheService.del('users:all');
+            res.status(HTTP_STATUS.CREATED).json(user);
+        } catch (error) {
+            logger.error('Error creating user:', error);
+            if (error instanceof Error) {
+                res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: error.message });
+            } else {
+                res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Unknown error occurred' });
+            }
+        }
+    }
+}
+

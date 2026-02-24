@@ -1,0 +1,14 @@
+module.exports = {
+  testEnvironment: 'node',
+  coverageDirectory: 'coverage',
+  collectCoverageFrom: ['src/**/*.{js,ts}'],
+  testMatch: ['**/*.test.ts', '**/*.test.js'],
+  preset: 'ts-jest',
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+  coveragePathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/"
+  ]
+};
