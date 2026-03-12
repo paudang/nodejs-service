@@ -1,4 +1,4 @@
-# nodejs-service
+# xcxzcz
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
@@ -17,7 +17,7 @@ This project comes pre-configured with industry-standard tooling for **Code Qual
 -   **DevOps**: Multi-stage Docker build, CI/CD ready.
 
 ## 🔄 CI/CD Pipeline
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/yourusername/nodejs-service/ci.yml?branch=main)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/yourusername/xcxzcz/ci.yml?branch=main)
 This project includes a **GitHub Actions** workflow located in `.github/workflows/ci.yml`.
 It automatically runs:
 -   Linting
@@ -103,13 +103,43 @@ If you want to run the application itself inside a Docker container while connec
 docker-compose up -d
 
 # Build Production Image
-docker build -t nodejs-service .
+docker build -t xcxzcz .
 
 # Run Container (attached to the compose network)
-docker run -p 3000:3000 --network nodejs-service_default \
+docker run -p 3000:3000 --network xcxzcz_default \
   -e DB_HOST=db \
   -e REDIS_HOST=redis \
-  nodejs-service
+  xcxzcz
+```
+
+## 🚀 PM2 Deployment (VPS/EC2)
+This project is pre-configured for direct deployment to a VPS/EC2 instance using **PM2** (via `ecosystem.config.js`).
+1. Install dependencies
+```bash
+npm install
+```
+2. **Start Infrastructure (DB, Redis, Kafka, etc.) in the background**
+*(This specifically starts the background services without running the application inside Docker, allowing PM2 to handle it).*
+```bash
+docker-compose up -d db redis
+```
+3. **Wait 5-10s** for the database to fully initialize.
+4. **Deploy the App using PM2 in Cluster Mode**
+```bash
+npm run build
+npm run deploy
+```
+5. **Check logs**
+```bash
+npx pm2 logs
+```
+6. Stop and remove the PM2 application
+```bash
+npx pm2 delete xcxzcz
+```
+7. Stop and remove the Docker infrastructure
+```bash
+docker-compose down
 ```
 
 ## 🔒 Security Features
@@ -117,3 +147,13 @@ docker run -p 3000:3000 --network nodejs-service_default \
 -   **CORS**: Configured for cross-origin requests.
 -   **Rate Limiting**: Protects against DDoS / Brute-force.
 -   **HPP**: Prevents HTTP Parameter Pollution attacks.
+
+
+## 🤖 AI-Native Development
+
+This project is "AI-Ready" out of the box. We have pre-configured industry-leading AI context files to bridge the gap between "Generated Code" and "AI-Assisted Development."
+
+- **Magic Defaults**: We've automatically tailored your AI context to focus on **xcxzcz** and its specific architectural stack (MVC, MySQL, etc.).
+- **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (70% coverage, MVC/Clean) directly within the editor. 
+  - *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
+- **Use ChatGPT/Gemini/Claude?** Check the **`prompts/`** directory. It contains highly-specialized Agent Skill templates. You can copy-paste these into any LLM to give it a "Senior Developer" understanding of your codebase immediately.

@@ -1,18 +1,19 @@
+import { env } from '@/config/env';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
 import logger from '@/utils/logger';
 import morgan from 'morgan';
+import { errorMiddleware } from '@/utils/errorMiddleware';
+import { setupGracefulShutdown } from '@/utils/gracefulShutdown';
+import healthRoutes from '@/routes/healthRoute';
 import apiRoutes from '@/routes/api';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from '@/config/swagger';
-dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 3000;
+const port = env.PORT;
 
 // Security Middleware
 app.use(helmet());
@@ -23,15 +24,12 @@ app.use(limiter);
 
 app.use(express.json());
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
-
 // View Engine Setup
 import path from 'path';
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.use(express.static(path.join(__dirname, '../public')));
-// Routes
 app.use('/api', apiRoutes);
 app.get('/', (req: Request, res: Response) => {
   res.render('index', { 
@@ -41,14 +39,16 @@ app.get('/', (req: Request, res: Response) => {
     communication: 'REST APIs'
   });
 });
-
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'UP' });
-});
+app.use('/health', healthRoutes);
 
 // Start Server Logic
 const startServer = async () => {
-    logger.info(`Server running on port ${port}`);
+    app.use(errorMiddleware);
+    const server = app.listen(port, () => {
+        logger.info(`Server running on port ${port}`);
+    });
+
+    setupGracefulShutdown(server);
 };
 
 // Database Sync
@@ -60,7 +60,7 @@ const syncDatabase = async () => {
             await sequelize.sync();
             logger.info('Database synced');
             // Start Server after DB is ready
-            app.listen(port, startServer);
+            await startServer();
             break;
         } catch (error) {
             logger.error('Error syncing database:', error);
