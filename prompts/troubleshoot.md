@@ -1,6 +1,6 @@
 # Troubleshoot Error
 
-I am encountering an error in the 12323eee application. Please help me diagnose and fix it based on our architectural standards.
+I am encountering an error in the nodejs-serviceapplication. Please help me diagnose and fix it based on our architectural standards.
 
 ## The Error Log / Issue Description
 \`\`\`

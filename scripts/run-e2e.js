@@ -32,16 +32,16 @@ try {
     }
 
     if (isAlreadyUp) {
-        console.log('✅ Infrastructure is already running! Skipping Docker spin-up...');
+        console.log('Infrastructure is already running! Skipping Docker spin-up...');
     } else {
-        console.log(`🔄 Starting Docker Compose infrastructure using '${composeCmd}'...`);
+        console.log(`Starting Docker Compose infrastructure using '${composeCmd}'...`);
         execute(`${composeCmd} up -d --build`);
         currentProcessStartedDocker = true;
 
-        console.log('⏳ Waiting for application healthcheck to turn green (120s timeout)...');
+        console.log('Waiting for application healthcheck to turn green (120s timeout)...');
         // Using wait-on to poll the universal /health endpoint injected into all architectures
         execute('npx wait-on http-get://127.0.0.1:3000/health -t 120000');
-        console.log('✅ Infrastructure is healthy!');
+        console.log('Infrastructure is healthy!');
     }
 
     console.log('🚀 Running E2E tests...');

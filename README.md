@@ -104,7 +104,7 @@ If you want to run the application itself inside a Docker container while connec
 docker-compose up -d
 
 # Build Production Image
-docker build -t 12323eee .
+docker build -t nodejs-service.
 
 # Run Container (attached to the compose network)
 docker run -p 3000:3000 --network 12323eee_default \
