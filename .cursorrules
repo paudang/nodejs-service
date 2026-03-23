@@ -1,7 +1,7 @@
-# Cursor AI Coding Rules for 12323eee
+# Cursor AI Coding Rules for nodejs-service
 
 ## Project Context
-You are an expert working on **12323eee**.
+You are an expert working on **nodejs-service**.
 - **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 - **Language**: TypeScript
 - **Architecture**: MVC
