@@ -12,6 +12,7 @@ import healthRoutes from '@/routes/healthRoute';
 import apiRoutes from '@/routes/api';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from '@/config/swagger';
+
 const app = express();
 const port = env.PORT;
 
@@ -52,11 +53,11 @@ const startServer = async () => {
 };
 
 // Database Sync
+import sequelize from '@/config/database';
 const syncDatabase = async () => {
     let retries = 30;
     while (retries) {
         try {
-            const sequelize = (await import('@/config/database')).default;
             await sequelize.sync();
             logger.info('Database synced');
             // Start Server after DB is ready

@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: nodejs-service API
+  title: 12323eee API
   version: 1.0.0
-  description: API documentation for nodejs-service
+  description: API documentation for 12323eee
 servers:
   - url: http://localhost:3000
     description: Local Server

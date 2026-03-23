@@ -5,10 +5,11 @@
             "jest",
             "node"
         ],
-        "rootDir": "../tests",
+        "rootDir": "..",
         "noEmit": true
     },
     "include": [
-        "**/*.ts"
+        "**/*.ts",
+        "../src/**/*.ts"
     ]
 }

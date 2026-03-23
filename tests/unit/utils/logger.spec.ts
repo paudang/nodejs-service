@@ -52,7 +52,6 @@ describe('Logger', () => {
         const winston = require('winston');
         jest.resetModules();
         process.env.NODE_ENV = 'production';
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         require('@/utils/logger');
         expect(winston.format.json).toHaveBeenCalled();
         process.env.NODE_ENV = 'test';

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import logger from '@/utils/logger';
 import { HTTP_STATUS } from '@/utils/httpCodes';
+import sequelize from '@/config/database';
 
 const router = Router();
 
@@ -15,7 +16,6 @@ router.get('/', async (req: Request, res: Response) => {
   logger.info('Health Check');
 
   try {
-    const sequelize = (await import('@/config/database')).default;
     await sequelize.authenticate();
     healthData.database = 'connected';
   } catch (err) {

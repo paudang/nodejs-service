@@ -14,6 +14,6 @@ Please provide the code implementation following these steps:
 2. **Model**: Define the database schema/model if applicable.
 3. **Controller**: Implement the business logic and request handling.
 4. **Route**: Create the API endpoints and wire them to the controller.
-6. **Testing**: Write comprehensive Jest unit tests covering the "Happy Path" and "Edge Cases/Errors" (AAA pattern). Remember, our coverage requirement is > 70%!
+6. **Testing**: Write comprehensive Jest unit tests covering the "Happy Path" and "Edge Cases/Errors" (AAA pattern). Remember, our coverage requirement is > 80%!
 
 Please provide the plan first so I can review it before we write the code.

@@ -12,6 +12,7 @@ jest.mock('@/config/redisClient', () => ({
 }));
 jest.mock('@/utils/logger');
 
+
 describe('UserController', () => {
     let userController: UserController;
     let mockRequest: Partial<Request>;
