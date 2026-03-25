@@ -9,7 +9,7 @@ on:
     - cron: '0 0 * * 1' # Weekly scan
 
 jobs:
-  security:
+  node-security:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,12 +22,13 @@ jobs:
         with:
           args: --severity-threshold=high
 
-      # Build Docker image
+  container-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - name: Build Docker image
         run: docker build -t nodejs-service:latest .
-
-      # Quét Docker image
-      - name: Run Snyk on Docker image
+      - name: Run Snyk to check Docker image for vulnerabilities
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
