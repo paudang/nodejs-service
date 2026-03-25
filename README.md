@@ -1,11 +1,11 @@
-# zxczxc
+# nodejs-service
 
 ![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
 ![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)
 
-[![Snyk Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/yourusername/zxczxc?style=flat-square)](https://snyk.io/)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=zxczxc&metric=alert_status)](https://sonarcloud.io/)
+[![Snyk Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/yourusername/nodejs-service?style=flat-square)](https://snyk.io/)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=nodejs-service&metric=alert_status)](https://sonarcloud.io/)
 
 
 A production-ready Node.js microservice generated with **MVC** and **MySQL**.
@@ -22,7 +22,7 @@ This project comes pre-configured with industry-standard tooling for **Code Qual
 -   **Enterprise Security**: Snyk SCA, SonarCloud SAST.
 
 ## 🔄 CI/CD Pipeline
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/yourusername/zxczxc/ci.yml?branch=main)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/yourusername/nodejs-service/ci.yml?branch=main)
 This project includes a **GitHub Actions** workflow located in `.github/workflows/ci.yml`.
 It automatically runs:
 -   Linting
@@ -109,13 +109,13 @@ If you want to run the application itself inside a Docker container while connec
 docker-compose up -d
 
 # Build Production Image
-docker build -t zxczxc .
+docker build -t nodejs-service .
 
 # Run Container (attached to the compose network)
-docker run -p 3000:3000 --network zxczxc_default \
+docker run -p 3000:3000 --network nodejs-service_default \
   -e DB_HOST=db \
   -e REDIS_HOST=redis \
-  zxczxc
+  nodejs-service
 ```
 
 ## 🚀 PM2 Deployment (VPS/EC2)
@@ -141,7 +141,7 @@ npx pm2 logs
 ```
 6. Stop and remove the PM2 application
 ```bash
-npx pm2 delete zxczxc
+npx pm2 delete nodejs-service
 ```
 7. Stop and remove the Docker infrastructure
 ```bash
@@ -165,7 +165,7 @@ docker-compose down
 
 This project is "AI-Ready" out of the box. We have pre-configured industry-leading AI context files to bridge the gap between "Generated Code" and "AI-Assisted Development."
 
-- **Magic Defaults**: We've automatically tailored your AI context to focus on **zxczxc** and its specific architectural stack (MVC, MySQL, etc.).
+- **Magic Defaults**: We've automatically tailored your AI context to focus on **nodejs-service** and its specific architectural stack (MVC, MySQL, etc.).
 - **Use Cursor?** We've configured **`.cursorrules`** at the root. It enforces project standards (80% coverage, MVC/Clean) directly within the editor. 
   - *Pro-tip*: You can customize the `Project Goal` placeholder in `.cursorrules` to help the AI understand your specific business logic!
 - **Use ChatGPT/Gemini/Claude?** Check the **`prompts/`** directory. It contains highly-specialized Agent Skill templates. You can copy-paste these into any LLM to give it a "Senior Developer" understanding of your codebase immediately.

@@ -3,8 +3,8 @@
 Hello AI! I am working on a Node.js project. Here is the context to help you understand the architecture, domain, and standards.
 
 ## Domain Overview
-**Project Name**: zxczxc
-You are an expert working on **zxczxc**.
+**Project Name**: nodejs-service
+You are an expert working on **nodejs-service**.
 **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 *(Keep this goal in mind when writing business logic, proposing data schemas, or considering edge cases like security and performance.)*
 
@@ -28,4 +28,4 @@ We use the MVC (Model-View-Controller) pattern.
    - We use `@/` path aliases for internal imports.
    - Files are mostly `camelCase`.
 
-Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the zxczxc?"
+Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the nodejs-service?"
