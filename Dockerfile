@@ -1,7 +1,7 @@
 # ==========================================
 # Stage 1: Builder
 # ==========================================
-FROM node:22.22.2-alpine AS builder
+FROM node:24.14.1-alpine AS builder
 
 WORKDIR /app
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
@@ -20,7 +20,7 @@ RUN npm run build
 # ==========================================
 # Stage 2: Production
 # ==========================================
-FROM node:22.22.2-alpine AS production
+FROM node:24.14.1-alpine AS production
 
 WORKDIR /app
 
