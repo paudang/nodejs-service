@@ -14,9 +14,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Quét Node dependencies
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
+          args: --severity-threshold=high
+
+      # Build Docker image
+      - name: Build Docker image
+        run: docker build -t nodejs-service:latest .
+
+      # Quét Docker image
+      - name: Run Snyk on Docker image
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: nodejs-service:latest
           args: --severity-threshold=high
