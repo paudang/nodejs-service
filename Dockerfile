@@ -8,9 +8,6 @@ RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Upgrade npm to fix high-severity vulnerabilities (glob, minimatch, tar)
-RUN npm install -g npm@11.6.4
-
 WORKDIR /app
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 
@@ -34,9 +31,6 @@ FROM node:22.22.2-trixie-slim AS production
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends ca-certificates && \
     rm -rf /var/lib/apt/lists/*
-
-# Upgrade npm to fix high-severity vulnerabilities
-RUN npm install -g npm@11.6.4
 
 WORKDIR /app
 

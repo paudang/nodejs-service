@@ -34,4 +34,4 @@ jobs:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           image: nodejs-service:latest
-          args: --file=Dockerfile --severity-threshold=high --skip-unused-projects --all-projects --exclude=/usr/local/lib/node_modules
+          args: --file=Dockerfile --severity-threshold=high --skip-unused-projects
