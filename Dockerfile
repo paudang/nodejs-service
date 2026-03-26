@@ -1,7 +1,7 @@
 # ==========================================
 # Stage 1: Builder
 # ==========================================
-FROM node:22.22.2-alpine AS builder
+FROM node:22-alpine AS builder
 
 # Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
 RUN apk update && apk upgrade --no-cache
@@ -26,7 +26,7 @@ RUN npm run build
 # ==========================================
 # Stage 2: Production
 # ==========================================
-FROM node:22.22.2-alpine AS production
+FROM node:22-alpine AS production
 
 # Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
 RUN apk update && apk upgrade --no-cache
