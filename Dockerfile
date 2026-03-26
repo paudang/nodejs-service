@@ -1,10 +1,12 @@
 # ==========================================
 # Stage 1: Builder
 # ==========================================
-FROM node:22-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 
 # Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
-RUN apk update && apk upgrade --no-cache
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 # Upgrade npm to fix high-severity vulnerabilities (glob, minimatch, tar)
 RUN npm install -g npm@11.6.4
@@ -26,10 +28,12 @@ RUN npm run build
 # ==========================================
 # Stage 2: Production
 # ==========================================
-FROM node:22-alpine AS production
+FROM node:22-bookworm-slim AS production
 
 # Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
-RUN apk update && apk upgrade --no-cache
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 # Upgrade npm to fix high-severity vulnerabilities
 RUN npm install -g npm@11.6.4
