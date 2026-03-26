@@ -1,7 +1,7 @@
 # ==========================================
 # Stage 1: Builder
 # ==========================================
-FROM node:22-bookworm-slim AS builder
+FROM node:22.22.2-trixie-slim AS builder
 
 # Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
 RUN apt-get update && apt-get upgrade -y && \
@@ -28,7 +28,7 @@ RUN npm run build
 # ==========================================
 # Stage 2: Production
 # ==========================================
-FROM node:22-bookworm-slim AS production
+FROM node:22.22.2-trixie-slim AS production
 
 # Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
 RUN apt-get update && apt-get upgrade -y && \
