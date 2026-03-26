@@ -1,7 +1,10 @@
 # ==========================================
 # Stage 1: Builder
 # ==========================================
-FROM node:24.14.1-alpine AS builder
+FROM node:22-alpine AS builder
+
+# Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
+RUN apk update && apk upgrade --no-cache
 
 WORKDIR /app
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
@@ -20,7 +23,10 @@ RUN npm run build
 # ==========================================
 # Stage 2: Production
 # ==========================================
-FROM node:24.14.1-alpine AS production
+FROM node:22-alpine AS production
+
+# Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
+RUN apk update && apk upgrade --no-cache
 
 WORKDIR /app
 
