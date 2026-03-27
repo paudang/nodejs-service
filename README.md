@@ -8,69 +8,81 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=nodejs-service&metric=alert_status)](https://sonarcloud.io/)
 
 
-A production-ready Node.js microservice generated with **MVC** and **MySQL**.
-This project comes pre-configured with industry-standard tooling for **Code Quality**, **Testing**, and **Security**.
+A production-ready Node.js microservice generated with **MVC** and **MySQL**. 
+This project follows a strict **7-Step Production-Ready Process** to ensure quality and scalability from day one.
+
+---
+
+## 🚀 7-Step Production-Ready Process
+
+1.  **Initialize Git**: `git init` (Required for Husky hooks and security gates).
+2.  **Install Dependencies**: `npm install`.
+3.  **Configure Environment**: Copy `.env.example` to `.env`.
+4.  **Start Infrastructure**: `docker-compose up -d db redis`.
+5.  **Run Development**: `npm run dev`.
+6.  **Verify Standards**: `npm run lint` and `npm test` (Enforce 80% coverage).
+7.  **Build & Deploy**: `npm run build` followed by `npm run deploy` (via PM2).
+
+---
 
 ## 🚀 Key Features
 
 -   **Architecture**: MVC (MVC Pattern).
--   **Database**: MySQL with **Flyway** migrations.
--   **Security**: Helmet, CORS, Rate Limiting, HPP.
--   **Quality**: Eslint, Prettier, Husky, Lint-Staged.
--   **Testing**: Jest (Unit & Integration).
--   **DevOps**: Multi-stage Docker build, CI/CD ready.
--   **Enterprise Security**: Snyk SCA, SonarCloud SAST.
+-   **Database**: MySQL (via Sequelize).
+-   **Security**: Helmet, CORS, Rate Limiting, HPP, Snyk SCA.
+-   **Quality**: 80%+ Test Coverage, Eslint, Prettier, Husky.
+-   **DevOps**: Multi-stage Docker, CI/CD ready (GitHub/GitLab/Jenkins).
+-   **Enterprise Hardening**: SonarCloud SAST, Security Policies.
 
-## 🔄 CI/CD Pipeline
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/yourusername/nodejs-service/ci.yml?branch=main)
-This project includes a **GitHub Actions** workflow located in `.github/workflows/ci.yml`.
-It automatically runs:
--   Linting
--   Tests
--   Builds
+## 📂 Project Structure
 
-## 🛠️ Getting Started
+The project follows **MVC** principles.
+- **Model**: Database schemas and data logic.
+- **View**: Template engines or API responders.
+- **Controller**: Orchestrates flow between Model and View.
+
+---
+
+## 🛠️ Detailed Getting Started
+
+Follow the **🚀 7-Step Production-Ready Process** summary at the top, or follow these detailed instructions:
 
 ### 1. Prerequisites
 -   Node.js (v18+)
 -   Docker & Docker Compose
 
-### 2. Quick Start
+### 2. Environment Setup
+Copy the example environment file and adjust the values as needed:
 ```bash
-# Initialize Git (Mandatory for Husky hooks)
+cp .env.example .env
+```
+
+### 3. Infrastructure & App Launch
+```bash
+# Initialize Git for security hooks
 git init
 
 # Install dependencies
 npm install
 
-# Troubleshooting Husky (if skip git init)
-# npx husky install
-
-# Start Infrastructure (DB, etc.)
-docker-compose up -d
-
-# Run Development Server
+# Start required services
 docker-compose up -d db redis
+
+# Run the app in development mode
 npm run dev
 ```
 
-### 3. Development Standards
-Ensure your code meets quality standards before committing:
-
+### 4. Quality & Standards
 ```bash
-# Run Linter
+# Lint & Format
 npm run lint
-
-# Run Tests
-npm test
-
-# Format Code
 npm run format
+
+# Run Unit/Integration Tests
+npm test
+npm run test:coverage
 ```
 
-## 📂 Project Structure
-
-The project follows **MVC** principles.
 API is exposed via **REST**.
 A Swagger UI for API documentation is available at:
 - **URL**: `http://localhost:3000/api-docs` (Dynamic based on PORT)
@@ -118,7 +130,6 @@ docker run -p 3000:3000 --network nodejs-service_default \
   -e REDIS_HOST=redis \
   nodejs-service
 ```
-
 ## 🚀 PM2 Deployment (VPS/EC2)
 This project is pre-configured for direct deployment to a VPS/EC2 instance using **PM2** (via `ecosystem.config.js`).
 1. Install dependencies
@@ -156,8 +167,9 @@ docker-compose down
 -   **HPP**: Prevents HTTP Parameter Pollution attacks.
 
 ### 🛡️ Enterprise Hardening (Big Tech Standard)
--   **Snyk SCA**: Automated dependency vulnerability scanning.
--   **SonarCloud**: Deep static analysis for code quality and security hotspots.
+-   **Snyk SCA**: Run `npm run snyk:test` for dependency scanning.
+-   **SonarCloud**: Automated SAST on every Push/PR.
+-   **Digital Guardians**: Recommended Gitleaks integration for secret protection.
 -   **Security Policy**: Standard `SECURITY.md` for vulnerability reporting.
 
 ## 🤖 AI-Native Development

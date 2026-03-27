@@ -50,11 +50,15 @@ RUN npm ci --only=production --ignore-scripts --no-audit --no-fund || npm ci --o
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx /root/.npm /root/.cache
 
 # Copy built artifacts from builder
+
 COPY --from=builder /app/dist ./dist
 
+
 # Copy other necessary files (like views if MVC)
+
 COPY --from=builder /app/src/views ./dist/views
 COPY --from=builder /app/public ./public
+
 
 EXPOSE 3000
 
