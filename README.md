@@ -37,19 +37,20 @@ It automatically runs:
 
 ### 2. Quick Start
 ```bash
-# Initialize Git (Required for Husky)
+# Initialize Git (Mandatory for Husky hooks)
 git init
 
 # Install dependencies
 npm install
 
-# Setup Git Hooks (Husky)
-npm run prepare
+# Troubleshooting Husky (if skip git init)
+# npx husky install
 
 # Start Infrastructure (DB, etc.)
 docker-compose up -d
 
 # Run Development Server
+docker-compose up -d db redis
 npm run dev
 ```
 
@@ -158,8 +159,6 @@ docker-compose down
 -   **Snyk SCA**: Automated dependency vulnerability scanning.
 -   **SonarCloud**: Deep static analysis for code quality and security hotspots.
 -   **Security Policy**: Standard `SECURITY.md` for vulnerability reporting.
-
-
 
 ## 🤖 AI-Native Development
 

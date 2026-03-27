@@ -14,7 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Quét Node dependencies
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master
         env:
