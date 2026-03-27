@@ -1,15 +1,17 @@
 # ==========================================
 # Stage 1: Builder
 # ==========================================
-FROM node:22.22.2-trixie-slim AS builder
+FROM node:22-alpine AS builder
 
 # Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk update && apk upgrade && \
+    apk add --no-cache ca-certificates
 
 WORKDIR /app
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+
+# Upgrade npm to latest to fix internal security issues (brace-expansion, etc.)
+RUN npm install -g npm@latest
 
 COPY package*.json ./
 COPY tsconfig*.json ./
@@ -25,17 +27,19 @@ RUN npm run build
 # ==========================================
 # Stage 2: Production
 # ==========================================
-FROM node:22.22.2-trixie-slim AS production
+FROM node:22-alpine AS production
 
 # Upgrade OS packages to fix upstream vulnerabilities (Snyk-detected)
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk update && apk upgrade && \
+    apk add --no-cache ca-certificates
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+
+# Upgrade npm to latest in production stage as well
+RUN npm install -g npm@latest
 
 COPY package*.json ./
 
@@ -43,15 +47,11 @@ COPY package*.json ./
 RUN npm ci --only=production --ignore-scripts --no-audit --no-fund || npm ci --only=production --ignore-scripts --no-audit --no-fund || npm ci --only=production --ignore-scripts --no-audit --no-fund
 
 # Copy built artifacts from builder
-
 COPY --from=builder /app/dist ./dist
 
-
 # Copy other necessary files (like views if MVC)
-
 COPY --from=builder /app/src/views ./dist/views
 COPY --from=builder /app/public ./public
-
 
 EXPOSE 3000
 
