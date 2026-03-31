@@ -87,6 +87,12 @@ API is exposed via **REST**.
 A Swagger UI for API documentation is available at:
 - **URL**: `http://localhost:3000/api-docs` (Dynamic based on PORT)
 
+### 🛣️ User Endpoints:
+- `GET /api/users`: List all users.
+- `POST /api/users`: Create a new user.
+- `PATCH /api/users/:id`: Partially update a user.
+- `DELETE /api/users/:id`: Delete a user (Soft Delete).
+
 
 ## ⚡ Caching
 This project uses **Redis** for caching.

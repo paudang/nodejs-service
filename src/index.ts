@@ -1,5 +1,6 @@
 import { env } from '@/config/env';
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import hpp from 'hpp';
@@ -33,43 +34,43 @@ app.set('view engine', 'pug');
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', apiRoutes);
 app.get('/', (req: Request, res: Response) => {
-  res.render('index', { 
+  res.render('index', {
     projectName: 'NodeJS Service',
     architecture: 'MVC',
     database: 'MySQL',
-    communication: 'REST APIs'
+    communication: 'REST APIs',
   });
 });
 app.use('/health', healthRoutes);
 
 // Start Server Logic
 const startServer = async () => {
-    app.use(errorMiddleware);
-    const server = app.listen(port, () => {
-        logger.info(`Server running on port ${port}`);
-    });
+  app.use(errorMiddleware);
+  const server = app.listen(port, () => {
+    logger.info(`Server running on port ${port}`);
+  });
 
-    setupGracefulShutdown(server);
+  setupGracefulShutdown(server);
 };
 
 // Database Sync
 import sequelize from '@/config/database';
 const syncDatabase = async () => {
-    let retries = 30;
-    while (retries) {
-        try {
-            await sequelize.sync();
-            logger.info('Database synced');
-            // Start Server after DB is ready
-            await startServer();
-            break;
-        } catch (error) {
-            logger.error('Error syncing database:', error);
-            retries -= 1;
-            logger.info(`Retries left: ${retries}`);
-            await new Promise(res => setTimeout(res, 5000));
-        }
+  let retries = 30;
+  while (retries) {
+    try {
+      await sequelize.sync();
+      logger.info('Database synced');
+      // Start Server after DB is ready
+      await startServer();
+      break;
+    } catch (error) {
+      logger.error('Error syncing database:', error);
+      retries -= 1;
+      logger.info(`Retries left: ${retries}`);
+      await new Promise((res) => setTimeout(res, 5000));
     }
+  }
 };
 
 syncDatabase();
