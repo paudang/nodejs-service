@@ -4,9 +4,6 @@
 ![License](https://img.shields.io/badge/License-ISC-blue.svg)
 ![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)
 
-[![Snyk Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/yourusername/nodejs-service?style=flat-square)](https://snyk.io/)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=nodejs-service&metric=alert_status)](https://sonarcloud.io/)
-
 
 A production-ready Node.js microservice generated with **MVC** and **MySQL**. 
 This project follows a strict **7-Step Production-Ready Process** to ensure quality and scalability from day one.
@@ -31,8 +28,8 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 -   **Database**: MySQL (via Sequelize).
 -   **Security**: Helmet, CORS, Rate Limiting, HPP, Snyk SCA.
 -   **Quality**: 80%+ Test Coverage, Eslint, Prettier, Husky.
--   **DevOps**: Multi-stage Docker, CI/CD ready (GitHub/GitLab/Jenkins).
--   **Enterprise Hardening**: SonarCloud SAST, Security Policies.
+-   **DevOps**: Multi-stage Docker, CI/CD ready (GitHub/GitLab/Jenkins/Bitbucket/CircleCI).
+
 
 ## 📂 Project Structure
 
@@ -171,12 +168,6 @@ docker-compose down
 -   **CORS**: Configured for cross-origin requests.
 -   **Rate Limiting**: Protects against DDoS / Brute-force.
 -   **HPP**: Prevents HTTP Parameter Pollution attacks.
-
-### 🛡️ Enterprise Hardening (Big Tech Standard)
--   **Snyk SCA**: Run `npm run snyk:test` for dependency scanning.
--   **SonarCloud**: Automated SAST on every Push/PR.
--   **Digital Guardians**: Recommended Gitleaks integration for secret protection.
--   **Security Policy**: Standard `SECURITY.md` for vulnerability reporting.
 
 ## 🤖 AI-Native Development
 
