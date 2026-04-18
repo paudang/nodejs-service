@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 import { JwtService, JwtPayload } from '@/services/jwtService';
+import cacheService from '@/config/redisClient';
 
 import { HTTP_STATUS } from '@/utils/httpCodes';
 
@@ -23,8 +24,8 @@ export const authMiddleware = async (req: CustomRequest, res: Response, next: Ne
   }
 
   if (decoded.jti) {
-    const expiryDate = JwtService.blacklistedTokens.get(decoded.jti);
-    if (expiryDate && Date.now() < expiryDate) {
+    const isBlacklisted = await cacheService.get(`blacklist:${decoded.jti}`);
+    if (isBlacklisted) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Token revoked' });
     }
   }

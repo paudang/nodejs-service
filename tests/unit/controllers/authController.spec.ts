@@ -10,6 +10,20 @@ jest.mock('bcryptjs');
 jest.mock('@/models/User', () => ({ findOne: jest.fn() }));
 const User = require('@/models/User');
 
+jest.mock(
+  '@/config/redisClient',
+  () => ({
+    __esModule: true,
+    default: {
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+    },
+  }),
+  { virtual: true },
+);
+import cacheService from '@/config/redisClient';
+
 describe('AuthController', () => {
   let authController: AuthController;
   let mockRequest: any;
@@ -91,7 +105,7 @@ describe('AuthController', () => {
 
       // Mock cache success
 
-      JwtService.activeRefreshTokens.set('1', ['old-jti']);
+      (cacheService.get as jest.Mock).mockResolvedValue(['old-jti']);
 
       await authController.refresh(mockRequest as Request, mockResponse as Response, nextFunction);
 
@@ -106,7 +120,7 @@ describe('AuthController', () => {
       const decoded = { id: '1', email: 'test@test.com', jti: 'stolen-jti' };
       (JwtService.verifyRefreshToken as jest.Mock).mockReturnValue(decoded);
 
-      JwtService.activeRefreshTokens.set('1', ['some-other-jti']);
+      (cacheService.get as jest.Mock).mockResolvedValue(['some-other-jti']);
 
       await authController.refresh(mockRequest as Request, mockResponse as Response, nextFunction);
 

@@ -5,6 +5,20 @@ import { Request, Response, NextFunction } from 'express';
 
 jest.mock('@/services/jwtService');
 
+jest.mock(
+  '@/config/redisClient',
+  () => ({
+    __esModule: true,
+    default: {
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+    },
+  }),
+  { virtual: true },
+);
+import cacheService from '@/config/redisClient';
+
 describe('AuthMiddleware', () => {
   let mockRequest: any;
   let mockResponse: any;
@@ -47,7 +61,7 @@ describe('AuthMiddleware', () => {
 
     // Mock the blacklist check
 
-    JwtService.blacklistedTokens.set('blacklisted-jti', Date.now() + 10000);
+    (cacheService.get as jest.Mock).mockResolvedValue(true);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
 
@@ -61,7 +75,7 @@ describe('AuthMiddleware', () => {
     mockRequest.headers.authorization = 'Bearer valid-token';
     (JwtService.verifyToken as jest.Mock).mockReturnValue(payload);
 
-    JwtService.blacklistedTokens.delete('valid-jti');
+    (cacheService.get as jest.Mock).mockResolvedValue(false);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
 

@@ -10,6 +10,9 @@ module.exports = {
       env_production: {
         NODE_ENV: 'production',
         PORT: 3000,
+        REDIS_HOST: '127.0.0.1',
+        REDIS_PORT: 6379,
+        REDIS_PASSWORD: '',
         DB_HOST: '127.0.0.1',
         DB_USER: 'root',
         DB_PASSWORD: 'root',

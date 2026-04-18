@@ -217,7 +217,6 @@ paths:
                   type: string
                 email:
                   type: string
-                
       responses:
         '200':
           description: The updated user

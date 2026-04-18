@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import User from '@/models/User';
 import { JwtService } from '@/services/jwtService';
 import logger from '@/utils/logger';
+import cacheService from '@/config/redisClient';
 import { HTTP_STATUS } from '@/utils/httpCodes';
 
 export class AuthController {
@@ -30,9 +31,10 @@ export class AuthController {
 
       // Store refresh token
 
-      const activeTokens = JwtService.activeRefreshTokens.get(userId) || [];
+      const cacheKey = `refresh_tokens:${userId}`;
+      const activeTokens = (await cacheService.get<string[]>(cacheKey)) || [];
       activeTokens.push(refreshJti!);
-      JwtService.activeRefreshTokens.set(userId, activeTokens);
+      await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60); // 7 days
 
       res.json({ token: accessToken, accessToken, refreshToken });
     } catch (error) {
@@ -56,22 +58,24 @@ export class AuthController {
       const userId = String(decoded.id);
       const incomingJti = decoded.jti;
 
-      let activeTokens = JwtService.activeRefreshTokens.get(userId) || [];
+      const cacheKey = `refresh_tokens:${userId}`;
+      let activeTokens = (await cacheService.get<string[]>(cacheKey)) || [];
 
       if (!activeTokens.includes(incomingJti)) {
-        // Theft detection!
+        // Theft detection! Revoke all sessions
         logger.warn(`Token theft detected for user ${userId}. Revoking all sessions.`);
-        JwtService.activeRefreshTokens.delete(userId);
+        await cacheService.del(cacheKey);
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Invalid session' });
       }
 
+      // Valid rotation
       activeTokens = activeTokens.filter((t) => t !== incomingJti);
       const newAccessToken = JwtService.generateToken({ id: userId, email: decoded.email });
       const newRefreshToken = JwtService.generateRefreshToken({ id: userId, email: decoded.email });
       const newRefreshJti = JwtService.decodeToken(newRefreshToken)?.jti;
 
       activeTokens.push(newRefreshJti!);
-      JwtService.activeRefreshTokens.set(userId, activeTokens);
+      await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60);
 
       res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
     } catch (error) {
@@ -94,7 +98,7 @@ export class AuthController {
         const remainingTime = Math.max(0, decodedAccess.exp - Math.floor(Date.now() / 1000));
 
         if (remainingTime > 0) {
-          JwtService.blacklistedTokens.set(decodedAccess.jti, Date.now() + remainingTime * 1000);
+          await cacheService.set(`blacklist:${decodedAccess.jti}`, true, remainingTime);
         }
       }
 
@@ -104,9 +108,10 @@ export class AuthController {
         if (decodedRefresh && decodedRefresh.id && decodedRefresh.jti) {
           const userId = String(decodedRefresh.id);
 
-          let activeTokens = JwtService.activeRefreshTokens.get(userId) || [];
+          const cacheKey = `refresh_tokens:${userId}`;
+          let activeTokens = (await cacheService.get<string[]>(cacheKey)) || [];
           activeTokens = activeTokens.filter((t) => t !== decodedRefresh.jti);
-          JwtService.activeRefreshTokens.set(userId, activeTokens);
+          await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60);
         }
       }
 

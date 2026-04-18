@@ -13,6 +13,7 @@ You are an expert working on **nodejs-service**.
 - **Architecture**: MVC
 - **Database**: MySQL
 - **Communication Protocol**: REST APIs
+- **Caching**: Redis
 - **Authentication**: JWT (Access & Refresh Tokens)
 
 ## High-Level Architecture
