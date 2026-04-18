@@ -2,6 +2,10 @@ import request from 'supertest';
 import express, { Express } from 'express';
 import router from '@/routes/api';
 
+jest.mock('@/middleware/authMiddleware', () => ({
+  authMiddleware: jest.fn((req, res, next) => next()),
+}));
+
 const mockGetUsers = jest
   .fn()
   .mockImplementation((req, res) => res.status(200).json([{ id: '1', name: 'John Doe' }]));

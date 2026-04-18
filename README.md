@@ -15,7 +15,7 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 1.  **Initialize Git**: `git init` (Required for Husky hooks and security gates).
 2.  **Install Dependencies**: `npm install`.
 3.  **Configure Environment**: Copy `.env.example` to `.env`.
-4.  **Start Infrastructure**: `docker-compose up -d db redis`.
+4.  **Start Infrastructure**: `docker-compose up -d db`.
 5.  **Run Development**: `npm run dev`.
 6.  **Verify Standards**: `npm run lint` and `npm test` (Enforce 80% coverage).
 7.  **Build & Deploy**: `npm run build` followed by `npm run deploy` (via PM2).
@@ -26,6 +26,7 @@ This project follows a strict **7-Step Production-Ready Process** to ensure qual
 
 -   **Architecture**: MVC (MVC Pattern).
 -   **Database**: MySQL (via Sequelize).
+-   **Authentication**: JWT-based Auth (Sign Up, Login, Protected Routes).
 -   **Security**: Helmet, CORS, Rate Limiting, HPP, Snyk SCA.
 -   **Quality**: 80%+ Test Coverage, Eslint, Prettier, Husky.
 -   **DevOps**: Multi-stage Docker, CI/CD ready (GitHub/GitLab/Jenkins/Bitbucket/CircleCI).
@@ -63,7 +64,7 @@ git init
 npm install
 
 # Start required services
-docker-compose up -d db redis
+docker-compose up -d db
 
 # Run the app in development mode
 npm run dev
@@ -86,15 +87,18 @@ A Swagger UI for API documentation is available at:
 
 ### 🛣️ User Endpoints:
 - `GET /api/users`: List all users.
+- `GET /api/users/:id`: Get a user by ID.
 - `POST /api/users`: Create a new user.
 - `PATCH /api/users/:id`: Partially update a user.
 - `DELETE /api/users/:id`: Delete a user (Soft Delete).
 
+### 🔐 Auth Endpoints:
+- `POST /api/auth/login`: Exchange credentials for a short-lived `accessToken` and a long-lived `refreshToken`.
+- `POST /api/auth/refresh`: Submit a `refreshToken` to receive a new pair of tokens. (Includes theft-detection logic).
+- `POST /api/auth/logout`: Revoke (blacklist) the active `accessToken` and delete the `refreshToken`.
+- `POST /api/users`: Acts as Sign Up when password is provided.
+  *Note: To access protected user endpoints (GET/PATCH/DELETE), include `Authorization: Bearer <your_accessToken>` in the headers.*
 
-## ⚡ Caching
-This project uses **Redis** for caching.
-- **Client**: `ioredis`
-- **Connection**: Configured via `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD` in `.env`.
 
 ## 📝 Logging
 This project uses **Winston** for structured logging.
@@ -111,7 +115,7 @@ To run the Node.js application locally while using Docker for the infrastructure
 
 ```bash
 # Start infrastructure
-docker-compose up -d db redis
+docker-compose up -d db
 
 # Start the application
 npm run dev
@@ -130,7 +134,6 @@ docker build -t nodejs-service .
 # Run Container (attached to the compose network)
 docker run -p 3000:3000 --network nodejs-service_default \
   -e DB_HOST=db \
-  -e REDIS_HOST=redis \
   nodejs-service
 ```
 ## 🚀 PM2 Deployment (VPS/EC2)
@@ -142,7 +145,7 @@ npm install
 2. **Start Infrastructure (DB, Redis, Kafka, etc.) in the background**
 *(This specifically starts the background services without running the application inside Docker, allowing PM2 to handle it).*
 ```bash
-docker-compose up -d db redis
+docker-compose up -d db
 ```
 3. **Wait 5-10s** for the database to fully initialize.
 4. **Deploy the App using PM2 in Cluster Mode**

@@ -10,6 +10,7 @@ import morgan from 'morgan';
 import { errorMiddleware } from '@/utils/errorMiddleware';
 import { setupGracefulShutdown } from '@/utils/gracefulShutdown';
 import healthRoutes from '@/routes/healthRoute';
+import authRoutes from '@/routes/authRoutes';
 import apiRoutes from '@/routes/api';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from '@/config/swagger';
@@ -25,6 +26,7 @@ const limiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 100 });
 app.use(limiter);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 // View Engine Setup
@@ -33,14 +35,24 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', apiRoutes);
+app.use('/api/auth', authRoutes);
+
 app.get('/', (req: Request, res: Response) => {
   res.render('index', {
-    projectName: 'NodeJS Service',
+    projectName: 'nodejs-service',
     architecture: 'MVC',
     database: 'MySQL',
     communication: 'REST APIs',
+    auth: ['JWT'],
   });
 });
+
+app.get('/login', (req: Request, res: Response) =>
+  res.render('login', { projectName: 'nodejs-service' }),
+);
+app.get('/signup', (req: Request, res: Response) =>
+  res.render('signup', { projectName: 'nodejs-service' }),
+);
 app.use('/health', healthRoutes);
 
 // Start Server Logic
