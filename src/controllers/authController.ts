@@ -24,10 +24,13 @@ export class AuthController {
 
       const userId = String(user.id || (user as unknown as { _id?: string | number })._id);
 
-      const accessToken = JwtService.generateToken({ id: userId, email: user.email });
       const refreshToken = JwtService.generateRefreshToken({ id: userId, email: user.email });
-
       const refreshJti = JwtService.decodeToken(refreshToken)?.jti;
+      const accessToken = JwtService.generateToken({
+        id: userId,
+        email: user.email,
+        sid: refreshJti,
+      });
 
       // Store refresh token
 
@@ -70,9 +73,13 @@ export class AuthController {
 
       // Valid rotation
       activeTokens = activeTokens.filter((t) => t !== incomingJti);
-      const newAccessToken = JwtService.generateToken({ id: userId, email: decoded.email });
       const newRefreshToken = JwtService.generateRefreshToken({ id: userId, email: decoded.email });
       const newRefreshJti = JwtService.decodeToken(newRefreshToken)?.jti;
+      const newAccessToken = JwtService.generateToken({
+        id: userId,
+        email: decoded.email,
+        sid: newRefreshJti,
+      });
 
       activeTokens.push(newRefreshJti!);
       await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60);

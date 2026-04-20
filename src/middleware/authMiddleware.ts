@@ -30,6 +30,13 @@ export const authMiddleware = async (req: CustomRequest, res: Response, next: Ne
     }
   }
 
+  if (decoded.sid) {
+    const activeTokens = (await cacheService.get<string[]>(`refresh_tokens:${decoded.id}`)) || [];
+    if (!activeTokens.includes(decoded.sid)) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Session expired' });
+    }
+  }
+
   req.user = decoded;
   next();
 };

@@ -76,6 +76,9 @@ describe('AuthController', () => {
 
       await authController.login(mockRequest as Request, mockResponse as Response, nextFunction);
 
+      expect(JwtService.generateToken).toHaveBeenCalledWith(
+        expect.objectContaining({ sid: 'test-jti' }),
+      );
       expect(mockResponse.json).toHaveBeenCalledWith({
         token: 'mock-token',
         accessToken: 'mock-token',
@@ -109,6 +112,9 @@ describe('AuthController', () => {
 
       await authController.refresh(mockRequest as Request, mockResponse as Response, nextFunction);
 
+      expect(JwtService.generateToken).toHaveBeenCalledWith(
+        expect.objectContaining({ sid: 'new-jti' }),
+      );
       expect(mockResponse.json).toHaveBeenCalledWith({
         accessToken: 'new-access',
         refreshToken: 'new-refresh',
