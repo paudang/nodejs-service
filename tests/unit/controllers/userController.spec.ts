@@ -1,7 +1,6 @@
 import { HTTP_STATUS } from '@/utils/httpCodes';
 import { Request, Response, NextFunction } from 'express';
 import { UserController } from '@/controllers/userController';
-import cacheService from '@/config/redisClient';
 
 // Mock dependencies
 jest.mock('@/models/User', () => {
@@ -23,11 +22,6 @@ jest.mock('bcryptjs', () => ({
   hash: jest.fn().mockResolvedValue('hashed_password'),
   compare: jest.fn().mockResolvedValue(true),
 }));
-jest.mock('@/config/redisClient', () => ({
-  getOrSet: jest.fn((_key, fetcher) => fetcher()),
-  del: jest.fn(),
-  flush: jest.fn(),
-}));
 jest.mock('@/utils/logger');
 
 describe('UserController', () => {
@@ -46,8 +40,6 @@ describe('UserController', () => {
       status: jest.fn().mockReturnThis(),
     };
     mockNext = jest.fn();
-    (cacheService.getOrSet as jest.Mock).mockImplementation((_key, fetcher) => fetcher());
-    (cacheService.flush as jest.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -65,7 +57,7 @@ describe('UserController', () => {
 
       // Assert
       expect(mockResponse.json).toHaveBeenCalledWith(usersMock);
-      expect(cacheService.getOrSet).toHaveBeenCalled();
+      expect(User.findAll).toHaveBeenCalled();
     });
 
     it('should return an empty array when no users found', async () => {
@@ -83,7 +75,6 @@ describe('UserController', () => {
     it('should handle errors correctly (Error Handling)', async () => {
       // Arrange
       const error = new Error('Database Error');
-      // Simulating error inside the fetcher by making User.findAll fail
       (User.findAll as jest.Mock).mockRejectedValue(error);
 
       // Act & Assert
@@ -113,7 +104,6 @@ describe('UserController', () => {
         email: payload.email,
         password: 'hashed_password',
       });
-      expect(cacheService.del).toHaveBeenCalledWith('users:all');
     });
 
     it('should throw error if password is missing when auth is enabled', async () => {
@@ -159,7 +149,6 @@ describe('UserController', () => {
       // Assert
       expect(mockResponse.json).toHaveBeenCalled();
       expect(User.findByPk).toHaveBeenCalledWith(id);
-      expect(cacheService.del).toHaveBeenCalledWith('users:all');
     });
 
     it('should handle 404/errors when user not found or update fails', async () => {
@@ -197,8 +186,6 @@ describe('UserController', () => {
       // Act
       await userController.deleteUser(mockRequest as Request, mockResponse as Response, mockNext);
       expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.OK);
-
-      expect(cacheService.del).toHaveBeenCalledWith('users:all');
     });
 
     it('should handle user not found during deletion (Error Handling)', async () => {

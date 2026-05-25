@@ -15,13 +15,14 @@ I am encountering an error in the nodejs-service application. Please help me dia
 
 When analyzing this error, please keep these project standards in mind:
 
-1. **Centralized Error Handling**: 
+1. **Centralized Error Handling**:
    - Ensure the error uses the standard custom error classes from `src/errors/` (e.g., `ApiError`, `NotFoundError`, `BadRequestError`).
    - If an error occurs in a controller, it should be passed to the global error middleware via `throw` (for async handlers, or `next(error)` in MVC).
 2. **Standard Status Codes**:
    - Verify that appropriate status codes from `httpCodes` are being used correctly, rather than generic 500s unless unexpected.
-3. **Dependencies**:
+3. **Dependencies & Resilience**:
    - Check if this is a connection issue (e.g., Database, Kafka, Redis) and see if our standard configuration or health checks provide hints.
+   - If the error is due to an external service timeout or instability, consider recommending our built-in `Timeout, Retry, CircuitBreaker` utilities from `src/utils/resilience`.
 4. **Fix Suggestion**:
    - Explain *why* the error happened.
    - Provide a targeted code fix matching our coding style (TypeScript, MVC).

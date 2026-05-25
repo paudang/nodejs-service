@@ -13,8 +13,8 @@ You are an expert working on **nodejs-service**.
 - **Architecture**: MVC
 - **Database**: MySQL
 - **Communication Protocol**: REST APIs
-- **Caching**: Redis
 - **Authentication**: JWT (Access & Refresh Tokens)
+- **Resilience**: Timeout, Retry, CircuitBreaker
 
 ## High-Level Architecture
 We use the MVC (Model-View-Controller) pattern.
@@ -25,7 +25,7 @@ We use the MVC (Model-View-Controller) pattern.
 ## Core Standards
 1. **Testing**: We enforce > 80% coverage. Tests use Jest and the AAA (Arrange, Act, Assert) pattern.
 2. **Error Handling**: We use centralized custom errors (e.g., `ApiError`) and global error middleware. Status codes come from standard constants, not hardcoded numbers.
-3. **Security**: 
+3. **Security**:
    - Use `authMiddleware` for protected routes.
    - Validate and sanitize all inputs to prevent injection and XSS.
    - Never expose sensitive data (passwords, inner keys) in API responses.

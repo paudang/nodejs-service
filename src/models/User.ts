@@ -5,7 +5,7 @@ class User extends Model {
   public id!: number;
   public name!: string;
   public email!: string;
-  public password!: string;
+  public password?: string | null;
 }
 
 User.init(
@@ -24,12 +24,10 @@ User.init(
       allowNull: false,
       unique: true,
     },
-
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
-
     deletedAt: {
       type: DataTypes.DATE,
       allowNull: true,

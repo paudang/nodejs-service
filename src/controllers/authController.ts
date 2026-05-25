@@ -1,18 +1,25 @@
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import User from '@/models/User';
 import { JwtService } from '@/services/jwtService';
 import logger from '@/utils/logger';
-import cacheService from '@/config/redisClient';
 import { HTTP_STATUS } from '@/utils/httpCodes';
 
 export class AuthController {
+  private setOAuthStateCookie(res: Response, state: string) {
+    res.cookie('oauth_state', state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 10 * 60 * 1000,
+    });
+  }
+
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
-
       const user = await User.findOne({ where: { email } });
-
       if (!user) {
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Invalid credentials' });
       }
@@ -33,11 +40,9 @@ export class AuthController {
       });
 
       // Store refresh token
-
-      const cacheKey = `refresh_tokens:${userId}`;
-      const activeTokens = (await cacheService.get<string[]>(cacheKey)) || [];
+      const activeTokens = JwtService.activeRefreshTokens.get(userId) || [];
       activeTokens.push(refreshJti!);
-      await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60); // 7 days
+      JwtService.activeRefreshTokens.set(userId, activeTokens);
 
       res.json({ token: accessToken, accessToken, refreshToken });
     } catch (error) {
@@ -61,17 +66,15 @@ export class AuthController {
       const userId = String(decoded.id);
       const incomingJti = decoded.jti;
 
-      const cacheKey = `refresh_tokens:${userId}`;
-      let activeTokens = (await cacheService.get<string[]>(cacheKey)) || [];
+      let activeTokens = JwtService.activeRefreshTokens.get(userId) || [];
 
       if (!activeTokens.includes(incomingJti)) {
-        // Theft detection! Revoke all sessions
+        // Theft detection!
         logger.warn(`Token theft detected for user ${userId}. Revoking all sessions.`);
-        await cacheService.del(cacheKey);
+        JwtService.activeRefreshTokens.delete(userId);
         return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Invalid session' });
       }
 
-      // Valid rotation
       activeTokens = activeTokens.filter((t) => t !== incomingJti);
       const newRefreshToken = JwtService.generateRefreshToken({ id: userId, email: decoded.email });
       const newRefreshJti = JwtService.decodeToken(newRefreshToken)?.jti;
@@ -82,8 +85,7 @@ export class AuthController {
       });
 
       activeTokens.push(newRefreshJti!);
-      await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60);
-
+      JwtService.activeRefreshTokens.set(userId, activeTokens);
       res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
     } catch (error) {
       logger.error('Refresh token error:', error);
@@ -105,7 +107,7 @@ export class AuthController {
         const remainingTime = Math.max(0, decodedAccess.exp - Math.floor(Date.now() / 1000));
 
         if (remainingTime > 0) {
-          await cacheService.set(`blacklist:${decodedAccess.jti}`, true, remainingTime);
+          JwtService.blacklistedTokens.set(decodedAccess.jti, Date.now() + remainingTime * 1000);
         }
       }
 
@@ -114,11 +116,9 @@ export class AuthController {
         const decodedRefresh = JwtService.decodeToken(refreshToken);
         if (decodedRefresh && decodedRefresh.id && decodedRefresh.jti) {
           const userId = String(decodedRefresh.id);
-
-          const cacheKey = `refresh_tokens:${userId}`;
-          let activeTokens = (await cacheService.get<string[]>(cacheKey)) || [];
+          let activeTokens = JwtService.activeRefreshTokens.get(userId) || [];
           activeTokens = activeTokens.filter((t) => t !== decodedRefresh.jti);
-          await cacheService.set(cacheKey, activeTokens, 7 * 24 * 60 * 60);
+          JwtService.activeRefreshTokens.set(userId, activeTokens);
         }
       }
 

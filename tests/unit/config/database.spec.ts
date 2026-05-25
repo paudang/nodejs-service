@@ -1,56 +1,56 @@
 jest.mock('sequelize', () => {
-    const mSequelize = jest.fn(() => ({
-        authenticate: jest.fn().mockResolvedValue(true),
-        define: jest.fn(),
-    }));
-    return { Sequelize: mSequelize };
+  const mSequelize = jest.fn(() => ({
+    authenticate: jest.fn().mockResolvedValue(true),
+    define: jest.fn(),
+  }));
+  return { Sequelize: mSequelize };
 });
 
 jest.mock('dotenv', () => ({
-    config: jest.fn()
+  config: jest.fn(),
 }));
 
 describe('Database Configuration', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-        jest.resetModules();
-        
-        // Clean environment
-        const envVars = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT'];
-        envVars.forEach(v => delete process.env[v]);
-    });
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.resetModules();
 
-    it('should initialize Sequelize with environment variables', () => {
-        const { Sequelize: SequelizeMock } = require('sequelize');
-        process.env.DB_NAME = 'testdb';
-        process.env.DB_USER = 'testuser';
-        process.env.DB_PASSWORD = 'testpassword';
-        process.env.DB_HOST = 'localhost';
-        process.env.DB_PORT = '5432';
+    // Clean environment
+    const envVars = ['DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT'];
+    envVars.forEach((v) => delete process.env[v]);
+  });
 
-        require('@/config/database');
-        
-        expect(SequelizeMock).toHaveBeenLastCalledWith(
-            'testdb',
-            'testuser',
-            'testpassword',
-            expect.objectContaining({
-                host: 'localhost',
-                port: 5432
-            })
-        );
-    });
+  it('should initialize Sequelize with environment variables', () => {
+    const { Sequelize: SequelizeMock } = require('sequelize');
+    process.env.DB_NAME = 'testdb';
+    process.env.DB_USER = 'testuser';
+    process.env.DB_PASSWORD = 'testpassword';
+    process.env.DB_HOST = 'localhost';
+    process.env.DB_PORT = '5432';
 
-    it('should initialize Sequelize with default values when env vars are missing', () => {
-        const { Sequelize: SequelizeMock } = require('sequelize');
-        delete process.env.DB_NAME;
-        delete process.env.DB_USER;
-        delete process.env.DB_PASSWORD;
-        delete process.env.DB_HOST;
-        delete process.env.DB_PORT;
+    require('@/config/database');
 
-        require('@/config/database');
-        
-        expect(SequelizeMock).toHaveBeenCalledTimes(1);
-    });
+    expect(SequelizeMock).toHaveBeenLastCalledWith(
+      'testdb',
+      'testuser',
+      'testpassword',
+      expect.objectContaining({
+        host: 'localhost',
+        port: 5432,
+      }),
+    );
+  });
+
+  it('should initialize Sequelize with default values when env vars are missing', () => {
+    const { Sequelize: SequelizeMock } = require('sequelize');
+    delete process.env.DB_NAME;
+    delete process.env.DB_USER;
+    delete process.env.DB_PASSWORD;
+    delete process.env.DB_HOST;
+    delete process.env.DB_PORT;
+
+    require('@/config/database');
+
+    expect(SequelizeMock).toHaveBeenCalledTimes(1);
+  });
 });

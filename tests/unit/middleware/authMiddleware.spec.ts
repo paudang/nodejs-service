@@ -5,20 +5,6 @@ import { Request, Response, NextFunction } from 'express';
 
 jest.mock('@/services/jwtService');
 
-jest.mock(
-  '@/config/redisClient',
-  () => ({
-    __esModule: true,
-    default: {
-      get: jest.fn(),
-      set: jest.fn(),
-      del: jest.fn(),
-    },
-  }),
-  { virtual: true },
-);
-import cacheService from '@/config/redisClient';
-
 describe('AuthMiddleware', () => {
   let mockRequest: any;
   let mockResponse: any;
@@ -61,7 +47,7 @@ describe('AuthMiddleware', () => {
 
     // Mock the blacklist check
 
-    (cacheService.get as jest.Mock).mockResolvedValue(true);
+    JwtService.blacklistedTokens.set('blacklisted-jti', Date.now() + 10000);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
 
@@ -75,11 +61,8 @@ describe('AuthMiddleware', () => {
     mockRequest.headers.authorization = 'Bearer valid-token';
     (JwtService.verifyToken as jest.Mock).mockReturnValue(payload);
 
-    (cacheService.get as jest.Mock).mockImplementation((key: string) => {
-      if (key.startsWith('blacklist:')) return Promise.resolve(false);
-      if (key === 'refresh_tokens:1') return Promise.resolve(['other-sid']);
-      return Promise.resolve(null);
-    });
+    JwtService.blacklistedTokens.delete('valid-jti');
+    JwtService.activeRefreshTokens.set('1', ['other-sid']);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
 
@@ -93,11 +76,8 @@ describe('AuthMiddleware', () => {
     mockRequest.headers.authorization = 'Bearer valid-token';
     (JwtService.verifyToken as jest.Mock).mockReturnValue(payload);
 
-    (cacheService.get as jest.Mock).mockImplementation((key: string) => {
-      if (key.startsWith('blacklist:')) return Promise.resolve(false);
-      if (key === 'refresh_tokens:1') return Promise.resolve(['active-sid']);
-      return Promise.resolve(null);
-    });
+    JwtService.blacklistedTokens.delete('valid-jti');
+    JwtService.activeRefreshTokens.set('1', ['active-sid']);
 
     await authMiddleware(mockRequest as Request, mockResponse as Response, nextFunction);
 

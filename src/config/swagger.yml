@@ -29,12 +29,12 @@ components:
         email:
           type: string
           description: The email of the user
-        
+
         password:
           type: string
           writeOnly: true
           description: The password of the user
-        
+
       example:
         id: 1
         name: John Doe
