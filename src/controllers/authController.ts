@@ -7,15 +7,6 @@ import logger from '@/utils/logger';
 import { HTTP_STATUS } from '@/utils/httpCodes';
 
 export class AuthController {
-  private setOAuthStateCookie(res: Response, state: string) {
-    res.cookie('oauth_state', state, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 10 * 60 * 1000,
-    });
-  }
-
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
