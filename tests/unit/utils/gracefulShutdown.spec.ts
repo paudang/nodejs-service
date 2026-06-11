@@ -1,12 +1,24 @@
 import { setupGracefulShutdown } from '@/utils/gracefulShutdown';
 import { Server } from 'http';
-import sequelize from '@/config/database';
+import mongoose from 'mongoose';
+import redisService from '@/config/redisClient';
 
-jest.mock('@/config/database', () => {
+jest.mock('mongoose', () => {
   return {
     __esModule: true,
     default: {
-      close: jest.fn().mockResolvedValue(true),
+      connection: {
+        close: jest.fn().mockResolvedValue(true),
+      },
+    },
+  };
+});
+
+jest.mock('@/config/redisClient', () => {
+  return {
+    __esModule: true,
+    default: {
+      quit: jest.fn().mockResolvedValue(true),
     },
   };
 });
@@ -63,7 +75,9 @@ describe('Graceful Shutdown', () => {
 
     expect(mockServer.close).toHaveBeenCalled();
 
-    expect(sequelize.close).toHaveBeenCalled();
+    expect(mongoose.connection.close).toHaveBeenCalledWith(false);
+
+    expect(redisService.quit).toHaveBeenCalled();
 
     expect(mockExit).toHaveBeenCalledWith(0);
   });
@@ -77,7 +91,7 @@ describe('Graceful Shutdown', () => {
   });
 
   it('should handle errors during shutdown and exit 1', async () => {
-    (sequelize.close as jest.Mock).mockRejectedValueOnce(new Error('Shutdown Error'));
+    (mongoose.connection.close as jest.Mock).mockRejectedValueOnce(new Error('Shutdown Error'));
 
     setupGracefulShutdown(mockServer as Server);
     processListeners['SIGTERM']();

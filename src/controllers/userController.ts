@@ -3,14 +3,19 @@ import { Request, Response, NextFunction } from 'express';
 import { HTTP_STATUS } from '@/utils/httpCodes';
 import User from '@/models/User';
 import logger from '@/utils/logger';
-
-import bcrypt from 'bcryptjs';
+import cacheService from '@/config/redisClient';
 
 export class UserController {
   static model = User;
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await User.findAll();
+      const users = await cacheService.getOrSet(
+        'users:all',
+        async () => {
+          return await User.find();
+        },
+        60,
+      );
       res.json(users);
     } catch (error) {
       logger.error(`${ERROR_MESSAGES.FETCH_USERS_ERROR}:`, error);
@@ -21,7 +26,7 @@ export class UserController {
   async getUserById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const user = await User.findByPk(id);
+      const user = await User.findById(id);
       if (!user) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({ error: ERROR_MESSAGES.USER_NOT_FOUND });
       }
@@ -36,12 +41,9 @@ export class UserController {
     try {
       const { name, email, password } = req.body || {};
 
-      if (!password) {
-        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Password is required' });
-      }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({ name, email, password: hashedPassword });
+      const user = await User.create({ name, email });
 
+      await cacheService.del('users:all');
       const rawUser = user as unknown as { toJSON?: () => Record<string, unknown> };
       const userJson =
         typeof rawUser.toJSON === 'function'
@@ -59,12 +61,11 @@ export class UserController {
     try {
       const { id } = req.params;
       const { name, email } = req.body || {};
-      const user = await User.findByPk(id);
-      if (!user) {
+      const updatedUser = await User.findByIdAndUpdate(id, { name, email }, { new: true });
+      if (!updatedUser) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({ error: ERROR_MESSAGES.USER_NOT_FOUND });
       }
-      await user.update({ name, email });
-      const updatedUser = user;
+      await cacheService.del('users:all');
       res.status(HTTP_STATUS.OK).json(updatedUser);
     } catch (error) {
       logger.error(`${ERROR_MESSAGES.UPDATE_USER_ERROR}:`, error);
@@ -75,11 +76,11 @@ export class UserController {
   async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const user = await User.findByPk(id);
-      if (!user) {
+      const deleted = await User.findByIdAndDelete(id);
+      if (!deleted) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({ error: ERROR_MESSAGES.USER_NOT_FOUND });
       }
-      await user.destroy();
+      await cacheService.del('users:all');
       res.status(HTTP_STATUS.OK).json({ message: 'User deleted successfully' });
     } catch (error) {
       logger.error(`${ERROR_MESSAGES.DELETE_USER_ERROR}:`, error);

@@ -1,6 +1,7 @@
 import { Server } from 'http';
 import logger from '@/utils/logger';
-import sequelize from '@/config/database';
+import mongoose from 'mongoose';
+import redisService from '@/config/redisClient';
 
 export const setupGracefulShutdown = (server: Server) => {
   const gracefulShutdown = async (signal: string) => {
@@ -12,8 +13,10 @@ export const setupGracefulShutdown = (server: Server) => {
       }
       logger.info('HTTP server closed.');
       try {
-        await sequelize.close();
-        logger.info('Database connection closed.');
+        await mongoose.connection.close(false);
+        logger.info('MongoDB connection closed.');
+        await redisService.quit();
+        logger.info('Redis connection closed.');
         logger.info('Graceful shutdown fully completed.');
         process.exit(0);
       } catch (err) {

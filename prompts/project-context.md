@@ -3,18 +3,19 @@
 Hello AI! I am working on a Node.js project. Here is the context to help you understand the architecture, domain, and standards.
 
 ## Domain Overview
-**Project Name**: nodejs-service
-You are an expert working on **nodejs-service**.
+**Project Name**: zzzzz
+You are an expert working on **zzzzz**.
 **Project Goal**: [Replace this with your business logic, e.g., E-commerce API]
 *(Keep this goal in mind when writing business logic, proposing data schemas, or considering edge cases like security and performance.)*
 
 ## Tech Stack
 - **Language**: TypeScript
 - **Architecture**: MVC
-- **Database**: MySQL
+- **Database**: MongoDB
 - **Communication Protocol**: REST APIs
-- **Authentication**: JWT (Access & Refresh Tokens)
+- **Caching**: Redis
 - **Resilience**: Timeout, Retry, CircuitBreaker
+- **Observability**: ELK Stack (Elasticsearch, Logstash, Kibana)
 
 ## High-Level Architecture
 We use the MVC (Model-View-Controller) pattern.
@@ -26,11 +27,14 @@ We use the MVC (Model-View-Controller) pattern.
 1. **Testing**: We enforce > 80% coverage. Tests use Jest and the AAA (Arrange, Act, Assert) pattern.
 2. **Error Handling**: We use centralized custom errors (e.g., `ApiError`) and global error middleware. Status codes come from standard constants, not hardcoded numbers.
 3. **Security**:
-   - Use `authMiddleware` for protected routes.
+
    - Validate and sanitize all inputs to prevent injection and XSS.
    - Never expose sensitive data (passwords, inner keys) in API responses.
-4. **Paths & Naming**:
+4. **Logging & Observability**:
+   - NEVER use `console.log()`. Always use the centralized `logger` instance.
+   - Include context (e.g., `userId`, `traceId`) in logs for Elasticsearch indexing.
+5. **Paths & Naming**:
    - We use `@/` path aliases for internal imports.
    - Files are mostly `camelCase`.
 
-Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the nodejs-service?"
+Please acknowledge you understand this context by saying "Context loaded successfully! How can I help you build the zzzzz?"

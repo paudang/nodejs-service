@@ -1,6 +1,7 @@
 import { HTTP_STATUS } from '@/utils/httpCodes';
 import { Request, Response, NextFunction } from 'express';
 import { UserController } from '@/controllers/userController';
+import cacheService from '@/config/redisClient';
 
 // Mock dependencies
 jest.mock('@/models/User', () => {
@@ -18,9 +19,10 @@ jest.mock('@/models/User', () => {
   };
 });
 const User = require('@/models/User');
-jest.mock('bcryptjs', () => ({
-  hash: jest.fn().mockResolvedValue('hashed_password'),
-  compare: jest.fn().mockResolvedValue(true),
+jest.mock('@/config/redisClient', () => ({
+  getOrSet: jest.fn((_key, fetcher) => fetcher()),
+  del: jest.fn(),
+  flush: jest.fn(),
 }));
 jest.mock('@/utils/logger');
 
@@ -40,6 +42,8 @@ describe('UserController', () => {
       status: jest.fn().mockReturnThis(),
     };
     mockNext = jest.fn();
+    (cacheService.getOrSet as jest.Mock).mockImplementation((_key, fetcher) => fetcher());
+    (cacheService.flush as jest.Mock).mockClear();
   });
 
   afterEach(() => {
@@ -50,20 +54,20 @@ describe('UserController', () => {
     it('should return successfully (Happy Path)', async () => {
       // Arrange
       const usersMock = [{ id: '1', name: 'Test', email: 'test@example.com' }];
-      (User.findAll as jest.Mock).mockResolvedValue(usersMock);
+      (User.find as jest.Mock).mockResolvedValue(usersMock);
 
       // Act
       await userController.getUsers(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
       expect(mockResponse.json).toHaveBeenCalledWith(usersMock);
-      expect(User.findAll).toHaveBeenCalled();
+      expect(cacheService.getOrSet).toHaveBeenCalled();
     });
 
     it('should return an empty array when no users found', async () => {
       // Arrange
       const usersMock: any[] = [];
-      (User.findAll as jest.Mock).mockResolvedValue(usersMock);
+      (User.find as jest.Mock).mockResolvedValue(usersMock);
 
       // Act
       await userController.getUsers(mockRequest as Request, mockResponse as Response, mockNext);
@@ -75,7 +79,8 @@ describe('UserController', () => {
     it('should handle errors correctly (Error Handling)', async () => {
       // Arrange
       const error = new Error('Database Error');
-      (User.findAll as jest.Mock).mockRejectedValue(error);
+      // Simulating error inside the fetcher by making User.findAll fail
+      (User.find as jest.Mock).mockRejectedValue(error);
 
       // Act & Assert
       await userController.getUsers(mockRequest as Request, mockResponse as Response, mockNext);
@@ -86,7 +91,7 @@ describe('UserController', () => {
   describe('createUser', () => {
     it('should successfully create a new user (Happy Path)', async () => {
       // Arrange
-      const payload = { name: 'Alice', email: 'alice@example.com', password: 'password123' };
+      const payload = { name: 'Alice', email: 'alice@example.com' };
       mockRequest.body = payload;
 
       const expectedUser = { id: '1', ...payload };
@@ -102,25 +107,14 @@ describe('UserController', () => {
       expect(User.create).toHaveBeenCalledWith({
         name: payload.name,
         email: payload.email,
-        password: 'hashed_password',
       });
-    });
-
-    it('should throw error if password is missing when auth is enabled', async () => {
-      // Arrange
-      const payload = { name: 'Alice', email: 'alice@example.com' };
-
-      // Act & Assert
-      mockRequest.body = payload;
-      await userController.createUser(mockRequest as Request, mockResponse as Response, mockNext);
-      expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);
-      expect(mockResponse.json).toHaveBeenCalledWith({ error: 'Password is required' });
+      expect(cacheService.del).toHaveBeenCalledWith('users:all');
     });
 
     it('should handle errors when creation fails (Error Handling)', async () => {
       // Arrange
       const error = new Error('Creation Error');
-      const payload = { name: 'Bob', email: 'bob@example.com', password: 'password123' };
+      const payload = { name: 'Bob', email: 'bob@example.com' };
       mockRequest.body = payload;
 
       (User.create as jest.Mock).mockRejectedValue(error);
@@ -140,15 +134,15 @@ describe('UserController', () => {
       mockRequest.body = payload;
 
       const expectedUser = { id, ...payload, email: 'alice@example.com' };
-      const userMock = { ...expectedUser, update: jest.fn().mockResolvedValue(true) };
-      (User.findByPk as jest.Mock).mockResolvedValue(userMock);
+      (User.findByIdAndUpdate as jest.Mock).mockResolvedValue(expectedUser);
+      (User.findById as jest.Mock).mockResolvedValue(expectedUser);
 
       // Act
       await userController.updateUser(mockRequest as Request, mockResponse as Response, mockNext);
 
       // Assert
-      expect(mockResponse.json).toHaveBeenCalled();
-      expect(User.findByPk).toHaveBeenCalledWith(id);
+      expect(mockResponse.json).toHaveBeenCalledWith(expectedUser);
+      expect(cacheService.del).toHaveBeenCalledWith('users:all');
     });
 
     it('should handle 404/errors when user not found or update fails', async () => {
@@ -156,7 +150,7 @@ describe('UserController', () => {
       const id = '999';
       mockRequest.params = { id };
       mockRequest.body = { name: 'Fail' };
-      (User.findByPk as jest.Mock).mockResolvedValue(null);
+      (User.findByIdAndUpdate as jest.Mock).mockResolvedValue(null);
 
       // Act
       await userController.updateUser(mockRequest as Request, mockResponse as Response, mockNext);
@@ -167,7 +161,7 @@ describe('UserController', () => {
       // Arrange
       const id = '1';
       const error = new Error('Database Error');
-      (User.findByPk as jest.Mock).mockRejectedValue(error);
+      (User.findByIdAndUpdate as jest.Mock).mockRejectedValue(error);
       mockRequest.params = { id };
       await userController.updateUser(mockRequest as Request, mockResponse as Response, mockNext);
       expect(mockNext).toHaveBeenCalledWith(error);
@@ -180,19 +174,20 @@ describe('UserController', () => {
       const id = '1';
       mockRequest.params = { id };
 
-      const userMock = { id, destroy: jest.fn().mockResolvedValue(true) };
-      (User.findByPk as jest.Mock).mockResolvedValue(userMock);
+      (User.findByIdAndDelete as jest.Mock).mockResolvedValue(true);
 
       // Act
       await userController.deleteUser(mockRequest as Request, mockResponse as Response, mockNext);
       expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.OK);
+
+      expect(cacheService.del).toHaveBeenCalledWith('users:all');
     });
 
     it('should handle user not found during deletion (Error Handling)', async () => {
       // Arrange
       const id = '999';
       mockRequest.params = { id };
-      (User.findByPk as jest.Mock).mockResolvedValue(null);
+      (User.findByIdAndDelete as jest.Mock).mockResolvedValue(null);
       await userController.deleteUser(mockRequest as Request, mockResponse as Response, mockNext);
       expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.NOT_FOUND);
     });
@@ -202,7 +197,7 @@ describe('UserController', () => {
       const id = '1';
       mockRequest.params = { id };
       const error = new Error('Database Error');
-      (User.findByPk as jest.Mock).mockRejectedValue(error);
+      (User.findByIdAndDelete as jest.Mock).mockRejectedValue(error);
       await userController.deleteUser(mockRequest as Request, mockResponse as Response, mockNext);
       expect(mockNext).toHaveBeenCalledWith(error);
     });
@@ -215,7 +210,6 @@ describe('UserController', () => {
       mockRequest.body = {
         name: 'Alice',
         email: 'alice@example.com',
-        password: 'password123',
       };
       await userController.createUser(mockRequest as Request, mockResponse as Response, mockNext);
       expect(mockNext).toHaveBeenCalledWith(error);
@@ -226,8 +220,8 @@ describe('UserController', () => {
     it('should handle database errors during update (Error Handling)', async () => {
       const id = '1';
       const error = new Error('Database Error');
-      const userMock = { id, update: jest.fn().mockRejectedValue(error) };
-      (User.findByPk as jest.Mock).mockResolvedValue(userMock);
+      (User.findById as jest.Mock).mockResolvedValue({ id });
+      (User.findByIdAndUpdate as jest.Mock).mockRejectedValue(error);
       mockRequest.params = { id };
       mockRequest.body = { name: 'Bob' };
       await userController.updateUser(mockRequest as Request, mockResponse as Response, mockNext);
@@ -241,7 +235,7 @@ describe('UserController', () => {
       const expectedUser = { id, name: 'Alice', email: 'alice@test.com' };
       mockRequest.params = { id };
 
-      (User.findByPk as jest.Mock).mockResolvedValue(expectedUser);
+      (User.findById as jest.Mock).mockResolvedValue(expectedUser);
 
       await userController.getUserById(mockRequest as Request, mockResponse as Response, mockNext);
       expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.OK);
@@ -250,7 +244,7 @@ describe('UserController', () => {
 
     it('should return 404 if user not found', async () => {
       mockRequest.params = { id: '999' };
-      (User.findByPk as jest.Mock).mockResolvedValue(null);
+      (User.findById as jest.Mock).mockResolvedValue(null);
       await userController.getUserById(mockRequest as Request, mockResponse as Response, mockNext);
       expect(mockResponse.status).toHaveBeenCalledWith(HTTP_STATUS.NOT_FOUND);
     });

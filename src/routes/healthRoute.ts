@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import logger from '@/utils/logger';
 import { HTTP_STATUS } from '@/utils/httpCodes';
 import { ERROR_MESSAGES } from '@/utils/errorMessages';
-import sequelize from '@/config/database';
+import mongoose from 'mongoose';
 
 const router = Router();
 
@@ -17,8 +17,10 @@ router.get('/', async (req: Request, res: Response) => {
   logger.info('Health Check');
 
   try {
-    await sequelize.authenticate();
-    healthData.database = 'connected';
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.db?.admin().ping();
+      healthData.database = 'connected';
+    }
   } catch (err) {
     healthData.database = 'error';
     healthData.status = 'DOWN';

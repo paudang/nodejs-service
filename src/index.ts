@@ -11,7 +11,6 @@ import morgan from 'morgan';
 import { errorMiddleware } from '@/utils/errorMiddleware';
 import { setupGracefulShutdown } from '@/utils/gracefulShutdown';
 import healthRoutes from '@/routes/healthRoute';
-import authRoutes from '@/routes/authRoutes';
 import apiRoutes from '@/routes/api';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpecs from '@/config/swagger';
@@ -37,24 +36,17 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api', apiRoutes);
-app.use('/api/auth', authRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.render('index', {
-    projectName: 'nodejs-service',
+    projectName: 'zzzzz',
     architecture: 'MVC',
-    database: 'MySQL',
+    database: 'MongoDB',
     communication: 'REST APIs',
-    auth: ['JWT'],
+    auth: ['None'],
   });
 });
 
-app.get('/login', (req: Request, res: Response) =>
-  res.render('login', { projectName: 'nodejs-service' }),
-);
-app.get('/signup', (req: Request, res: Response) =>
-  res.render('signup', { projectName: 'nodejs-service' }),
-);
 app.use('/health', healthRoutes);
 
 // Start Server Logic
@@ -68,12 +60,12 @@ const startServer = async () => {
 };
 
 // Database Sync
-import sequelize from '@/config/database';
+import connectDB from '@/config/database';
 const syncDatabase = async () => {
   let retries = 30;
   while (retries) {
     try {
-      await sequelize.sync();
+      await connectDB();
       logger.info('Database synced');
       // Start Server after DB is ready
       await startServer();
