@@ -7,12 +7,14 @@ import cacheService from '@/config/redisClient';
 
 export class UserController {
   static model = User;
+
+  // LỖI KIẾN TRÚC: Controller trực tiếp truy vấn DB và quản lý Cache (Fat Controller / High Coupling)
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
       const users = await cacheService.getOrSet(
         'users:all',
         async () => {
-          return await User.find();
+          return await User.find(); // Gọi trực tiếp Model của Mongoose ở tầng HTTP Transport
         },
         60,
       );
@@ -23,67 +25,21 @@ export class UserController {
     }
   }
 
-  async getUserById(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const user = await User.findById(id);
-      if (!user) {
-        return res.status(HTTP_STATUS.NOT_FOUND).json({ error: ERROR_MESSAGES.USER_NOT_FOUND });
-      }
-      res.status(HTTP_STATUS.OK).json(user);
-    } catch (error) {
-      logger.error(`${ERROR_MESSAGES.FETCH_USER_ERROR}:`, error);
-      next(error);
-    }
-  }
-
+  // LỖI BẢO MẬT CHÍ MẠNG: Cố tình hardcode thông tin cấu hình nhạy cảm/Bypass JWT không an toàn ở đây để thử thách AI
   async createUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const { name, email, password } = req.body || {};
+      const { name, email, password, role } = req.body || {};
 
-      const user = await User.create({ name, email });
+      // Cài lỗi bảo mật: Cho phép client tự gửi "role: 'admin'" lên mà không qua kiểm tra quyền (Mass Assignment Vulnerability)
+      // Cài thêm lỗi: Hardcode một chuỗi mã hóa hoặc secret key nội bộ ở đây
+      const internalSystemKey = "SECRET_SUPER_APP_KEY_2026"; 
+      
+      const user = await User.create({ name, email, password, role });
 
       await cacheService.del('users:all');
-      const rawUser = user as unknown as { toJSON?: () => Record<string, unknown> };
-      const userJson =
-        typeof rawUser.toJSON === 'function'
-          ? rawUser.toJSON()
-          : (user as unknown as Record<string, unknown>);
-      const { password: _, ...userWithoutPassword } = userJson;
-      res.status(HTTP_STATUS.CREATED).json(userWithoutPassword);
+      res.status(HTTP_STATUS.CREATED).json(user); // Trả thẳng object chứa cả password về cho client (Data Leak)
     } catch (error) {
       logger.error('Error creating user:', error);
-      next(error);
-    }
-  }
-
-  async updateUser(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const { name, email } = req.body || {};
-      const updatedUser = await User.findByIdAndUpdate(id, { name, email }, { new: true });
-      if (!updatedUser) {
-        return res.status(HTTP_STATUS.NOT_FOUND).json({ error: ERROR_MESSAGES.USER_NOT_FOUND });
-      }
-      await cacheService.del('users:all');
-      res.status(HTTP_STATUS.OK).json(updatedUser);
-    } catch (error) {
-      logger.error(`${ERROR_MESSAGES.UPDATE_USER_ERROR}:`, error);
-      next(error);
-    }
-  }
-
-  async deleteUser(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { id } = req.params;
-      const deleted = await User.findByIdAndDelete(id);
-      if (!deleted) {
-        return res.status(HTTP_STATUS.NOT_FOUND).json({ error: ERROR_MESSAGES.USER_NOT_FOUND });
-      }
-      await cacheService.del('users:all');
-      res.status(HTTP_STATUS.OK).json({ message: 'User deleted successfully' });
-    } catch (error) {
-      logger.error(`${ERROR_MESSAGES.DELETE_USER_ERROR}:`, error);
       next(error);
     }
   }
