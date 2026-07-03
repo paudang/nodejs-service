@@ -1,0 +1,19 @@
+name: ArchGuard Architectural Audit
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # Cực kỳ quan trọng để Bot viết được nhận xét vào PR
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run ArchGuard AI Reviewer
+        uses: paudang/archguard-ai@main # Gọi trực tiếp từ link repo của bạn
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
