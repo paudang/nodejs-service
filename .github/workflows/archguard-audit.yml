@@ -8,12 +8,12 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: write # Cực kỳ quan trọng để Bot viết được nhận xét vào PR
+      pull-requests: 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Run ArchGuard AI Reviewer
-        uses: paudang/archguard-ai@main # Gọi trực tiếp từ link repo của bạn
+        uses: paudang/archguard-ai@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
