@@ -1,19 +1,18 @@
-name: ArchGuard Architectural Audit
+name: ArchGuard AI Architectural Review
 
 on:
   pull_request:
     types: [opened, synchronize]
 
 jobs:
-  audit:
+  archguard-review:
     runs-on: ubuntu-latest
     permissions:
-      pull-requests: 
+      pull-requests: write # Required for ArchGuard to publish PR comments
+      contents: read       # Required to read the PR diff
+      id-token: write      # Required for Zero-Trust OIDC Authentication
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Run ArchGuard AI Reviewer
-        uses: paudang/archguard-ai@main
+      - name: Run ArchGuard AI Auditor
+        uses: archguard-labs/action@main  # Replace @main with @v1.x tags for stable production environments
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
