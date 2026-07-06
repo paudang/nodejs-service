@@ -1,26 +1,5 @@
 import mongoose from 'mongoose';
 
-import logger from '@/utils/logger';
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/my_database');
 
-const connectDB = async (): Promise<void> => {
-  const dbHost = process.env.DB_HOST || 'localhost';
-  const dbPort = process.env.DB_PORT || '27017';
-  const dbName = process.env.DB_NAME || 'demo';
-  const mongoURI = process.env.MONGO_URI || `mongodb://${dbHost}:${dbPort}/${dbName}`;
-
-  let retries = 5;
-  while (retries) {
-    try {
-      await mongoose.connect(mongoURI);
-      logger.info('MongoDB Connected...');
-      break;
-    } catch (err) {
-      logger.error('MongoDB connection failed:', err);
-      retries -= 1;
-      logger.info(`Retries left: ${retries}. Waiting 5s...`);
-      await new Promise((res) => setTimeout(res, 5000));
-    }
-  }
-};
-
-export default connectDB;
+export const db = mongoose.connection;
