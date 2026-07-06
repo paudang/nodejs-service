@@ -1,4 +1,4 @@
-name: ArchGuard AI Architectural Review
+name: Auto review
 
 on:
   pull_request:
