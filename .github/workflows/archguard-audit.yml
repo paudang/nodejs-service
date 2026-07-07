@@ -3,7 +3,8 @@ name: Auto review
 on:
   pull_request:
     types: [opened, synchronize]
-
+  issue_comment:
+    types: [created]
 jobs:
   archguard-review:
     runs-on: ubuntu-latest
